@@ -146,9 +146,9 @@ git pull os_course_spoc_exercise
 -[X]
 
  - 修改代码，可正常显示小组两位同学的学号（用字符串） 
- > 完成
+ > 完成https://github.com/JudyYe/v9-cpu/blob/master/root/usr/funcall.c
  - 生成funcall.c的汇编码，理解其实现并给汇编码写注释
- > v9-cpu/funcall.txt
+ > v9-cpu/funcall.txt https://github.com/JudyYe/v9-cpu/blob/master/funcall.txt
  - 尝试用xem的简单调试功能单步调试代码
  > ./xem -g funcall
 
