@@ -154,11 +154,12 @@ git pull os_course_spoc_exercise
 
  - 回答如下问题：
    - funcall中的堆栈有多大？是内核态堆栈还是用户态堆栈
-  > ???;内核态
+ > ???;内核态
    - funcall中的全局变量ret放在内存中何处？如何对它寻址？
-  > 通过SG，反汇编，找到global_address + 0，
+ > 通过SG，反汇编，找到global_address + 0，
    - funcall中的字符串放在内存中何处？如何对它寻址？
-  > 运行到2c的时候，看a的值，就是string s存放的内存地址。-----local sp + 0x24
+ > 运行到2c的时候，看a的值，就是string s存放的内存地址。
+ > 根据此方法，找到地址：0x90 - 0x93处内存是（'2''0''1''3')即字符串的位置。
 
    - 局部变量i在内存中的何处？如何对它寻址？
   > local sp + 4 
