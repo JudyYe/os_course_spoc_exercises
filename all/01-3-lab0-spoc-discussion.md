@@ -222,14 +222,35 @@ git pull os_course_spoc_exercise
  
  - os1中的task1和task2的堆栈的起始和终止地址是什么？
  > 注：堆栈的起始和终止地址指，运行时的栈，不是最大可以使用的栈。
-
 | \ | task0 | task1|
 | - | - | - |
 |起始 | 函数调用时的sp = 07bffff8 | task1_stack + 50|
 |终止 | 中断发生时的sp | 中断发生时的sp |
 
+
  - os1是如何实现任务切换的？
- > 在trap中交换task0和task1的sp，使得恢复中断的时候，跳转到交换后的函数状态。
+> 在trap中交换task0和task1的sp，使得恢复中断的时候，跳转到交换后的函数状态。
+
  - os3中的task1和task2的堆栈的起始和终止地址是什么？
+> task0/1_stack的地址。
+
+```task0_sp -= 2; *task0_sp = &task0_stack[1000];
+task0_sp -= 2; *task0_sp = &trapret;```
+
  - os3是如何实现任务切换的？
+ 
+| 名称 | 功能 | 
+|-|-|
+|task0_stack/task1_stack | 处于用户态时的栈，usp指向他们 
+|task0_kstack/task1_kstack| 核心态时的栈
+> 在核心态中，维护两个栈task0/1_kstack，当发生一个timeout中断的时候，交换task0_sp和task1_sp两个栈顶指针，在task0_sp栈顶的第一个RTI时，会首先跳转到trapret，在trapret中，利用实现存在task0/1_stack中的栈元素，设置到用户态，然后再次跳转到task0/1，此时运行task0/1就处于用户态运行。
+> 与os1的不同之处在于，task0 / 1是运行在用户态中的，输出write利用系统调用sys_write完成。```trap = FSYS```
+
  - os3的用户态task能够破坏内核态的系统吗？
+ > 可以。
+
+ > 方法1：在write()中，改变asm(TRAP, S_write)为asm(TRAP, $随便的值)
+ 
+ >方法2：在task0中调用自己写的read函数，read是一个未定义中断号
+ 
+ >方法3：参考陈文潇，```就是fc不是syscall也不是timer，可以看到alltraps里面是从PSHA开始的，那么在这之前PUSH一个奇怪的数作为fc，使得跳入unknown interrupt即可。```
