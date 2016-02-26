@@ -194,19 +194,42 @@ git pull os_course_spoc_exercise
 -[X]
 
  - 生成os0.c的汇编码，理解其实现并给汇编码写注释
+ > 
  - 尝试用xem的简单调试功能单步调试代码
  - 回答如下问题：
    - 何处设置的中断使能？   
+ > STI 设置中断使能为1
    - 系统何时处于中断屏蔽状态？
+ > 开始处理timeout中断的时候，em.c使中断屏蔽
+
    - 如果系统处于中断屏蔽状态，如何让其中断使能？
+ > RTI命令后，如果全部中断处理完，开中断。
    - 系统产生中断后，CPU会做哪些事情？（在没有软件帮助的情况下）
+ > 1. 切换状态：当在用户态时，保存当前环境，并切换到内核态
+> 2. 保存PC到栈中 ``` *(uint *)((xsp ^ p) & -8) = (uint)xpc - tpc;```
+> 3. 跳转到中断向量，即设置pc ```xpc = (int *)(ivec + tpc);```
+> 4. 执行中断（运行以后的指令）
+> 总之，就是把当前状态存到栈中，然后跳转到中断向量表的位置。
+
    - CPU执行RTI指令的具体完成工作是哪些？
+ > 1. return from interrupt, 
+> 2. set pc, sp, may switch user/kernel mode; 
+> 3. if has pending interrupt, process the interrupt
+
 
 [HARD]分析和实验os1/os3.c，需要完成的内容包括： 
 -[X]
  
  - os1中的task1和task2的堆栈的起始和终止地址是什么？
+ > 注：堆栈的起始和终止地址指，运行时的栈，不是最大可以使用的栈。
+
+| \ | task0 | task1|
+| - | - | - |
+|起始 | 函数调用时的sp = 07bffff8 | task1_stack + 50|
+|终止 | 中断发生时的sp | 中断发生时的sp |
+
  - os1是如何实现任务切换的？
+ > 在trap中交换task0和task1的sp，使得恢复中断的时候，跳转到交换后的函数状态。
  - os3中的task1和task2的堆栈的起始和终止地址是什么？
  - os3是如何实现任务切换的？
  - os3的用户态task能够破坏内核态的系统吗？
