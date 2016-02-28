@@ -39,6 +39,8 @@
 * 设备驱动串口、SDRAM、FLASH、以太网、LCD、NVRAM、EEPROM、键盘、USB、PCMCIA、PCI、RTC等驱动支持；
 * 上电自检功能SDRAM、FLASH大小自动检测；SDRAM故障检测；CPU型号；
 * 特殊功能XIP内核引导；
+  主要用于嵌入式操作系统的装载与引导。
+  开放源码，支持多种嵌入式操作系统内核，支持多个处理器系列，具有较高的可靠性和稳定性。
 ```
 
 ## 3.3 中断、异常和系统调用比较
@@ -66,6 +68,13 @@
 ## 3.4 linux系统调用分析
  1. 通过分析[lab1_ex0](https://github.com/chyyuu/ucore_lab/blob/master/related_info/lab1/lab1-ex0.md)了解Linux应用的系统调用编写和含义。(w2l1)
  
+ ```
+  objdump : 对二进制程序进行反编译，得到汇编源码。 -S参数命令是尽可能反汇编出源代码。
+  nm : 用于显示关于指定 File 中符号的信息，得到符号的地址及类型。
+  file : 是检测文件类型的命令。例如可以检测出ex0.exe为32位i386的ELF文件，使用了动态链接和ld-linux的解释器。
+  系统调用 :  通过将SYS_write放入eax，STDOUT放入ebx，字符串的位置放入ecx， 字符串的长度放入edx。
+  之后通过int 0x80来实现系统调用，通过这几个放入寄存器的参数来实现功能。
+ ```
 
  ```
   + 采分点：说明了objdump，nm，file的大致用途，说明了系统调用的具体含义
@@ -78,6 +87,10 @@
  
  1. 通过调试[lab1_ex1](https://github.com/chyyuu/ucore_lab/blob/master/related_info/lab1/lab1-ex1.md)了解Linux应用的系统调用执行过程。(w2l1)
  
+ ```
+  strace : 用于用来跟踪进程执行时的系统调用和所接收的信号。-f参数显示了跟踪由fork调用所产生的子进程。-c参数可以统计每一系统调用的所执行的时间,次数和出错的次数等。
+  ex1.md的提示不是很懂
+ ```
 
  ```
   + 采分点：说明了strace的大致用途，说明了系统调用的具体执行过程（包括应用，CPU硬件，操作系统的执行过程）
