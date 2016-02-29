@@ -120,7 +120,7 @@
  
  ```
   strace : 用于用来跟踪进程执行时的系统调用和所接收的信号。-f参数显示了跟踪由fork调用所产生的子进程。-c参数可以统计每一系统调用的所执行的时间,次数和出错的次数等。
-  ex1.md的提示不是很懂
+  通过strace的追踪，可以看到在linux应用调用中，ex1依次调用了execve新建进程, access检查文件, open打开文件, fstat查看文件, read读取文件, mmap将文件载入内存, mprotect设置内存访问权限, 最后调用write函数输出hello world。
  ```
 
  ```
