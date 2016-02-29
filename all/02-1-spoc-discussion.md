@@ -102,8 +102,66 @@
  
 ## 3.5 ucore系统调用分析
  1. ucore的系统调用中参数传递代码分析。
+ > - 在ucore中的trap.c中，通过trapframe的结构传递参数。调用trap（trapframe），trap中调用trap_dispatch(trapframe),在trap_dispatch()中检查中断类型trapframe tf->trapno,如果是系统调用T_SYS，则调用syscall().
+> - 进入syscall()中，在trapframe中有tf_reg，tf_reg的eax传递系统调用号，参数有ebx, ecx, edi,esi传递。
+
  1. ucore的系统调用中返回结果的传递代码分析。
- 1. 以ucore lab8的answer为例，分析ucore 应用的系统调用编写和含义。
+> 恢复syscall存储在trapframe中的调用trap之前的CPU状态，清除trap number，error code，iret，从中断中返回。
+找到 /kern/trap/trapentry.S中的.globl __trapret
+
+    ```
+__trapret:
+    # restore registers from stack
+    popal
+
+    # restore %ds, %es, %fs and %gs
+    popl %gs
+    popl %fs
+    popl %es
+    popl %ds
+
+    # get rid of the trap number and error code
+    addl $0x8, %esp
+    iret
+    ```
+ 1. 以ucore lab8的answer为例，分析ucore应用的系统调用编写和含义。
+  > 程序员通过user/libs/syscall.c中的函数调用系统调用。如
+    
+    ```
+int
+sys_wait(int pid, int *store) {
+    return syscall(SYS_wait, pid, store);
+}
+    ```
+> syscall()函数中，通过压栈，和内联函数调用传入参数.内联函数可以在kernel/syscall.c中找到对应的使用，见1
+
+    ```
+    syscall(int num, ...) {
+    va_list ap;
+    va_start(ap, num);
+    uint32_t a[MAX_ARGS];
+    int i, ret;
+    for (i = 0; i < MAX_ARGS; i ++) {
+        a[i] = va_arg(ap, uint32_t);
+    }
+    va_end(ap);
+
+    asm volatile (
+        "int %1;"
+        : "=a" (ret)
+        : "i" (T_SYSCALL),
+          "a" (num),
+          "d" (a[0]),
+          "c" (a[1]),
+          "b" (a[2]),
+          "D" (a[3]),
+          "S" (a[4])
+        : "cc", "memory");
+    return ret;
+}
+    ```
+
+
  1. 以ucore lab8的answer为例，尝试修改并运行ucore OS kernel代码，使其具有类似Linux应用工具`strace`的功能，即能够显示出应用程序发出的系统调用，从而可以分析ucore应用的系统调用执行过程。
  
 ## 3.6 请分析函数调用和系统调用的区别
