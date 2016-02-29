@@ -76,7 +76,22 @@
 
 ## 3.3 中断、异常和系统调用比较
  1. 举例说明Linux中有哪些中断，哪些异常？
+> Linux中把中断描述符分为五类：
+
+| 门|功能 |
+|-|-|
+|中断门（interrupt gate）| 用户态的进程不能访问Intel中断门（门的DPL字段为0）。所有的Linux中断处理程序都通过中断门激活，并全部限制在内核态。
+|系统门（system gate）|用户态的进程可以访问Intel陷阱门（门的DPL字段为3）。通过系统门来激活三个Linux异常处理程序|
+|系统中断门（system interrupt gate）| 能够被用户态进程访问的Intel中断门（门的DPL字段为3）。与向量3相关的异常处理程序是由系统中断门激活的
+|陷阱门（trap gate）| 用户态的进程不能访问的一个Intel陷阱门（门的DPL字段为0）。大部分Linux异常处理程序都通过陷阱门来激活。
+|任务门（task gate）| 不能被用户态进程访问的Intel任务门（门的DPL字段为0）。Linux对“Double fault”异常的处理程序是由任务门激活的。|
+ > 查看全部中断，可以查看linux 的中断向量表。中断举例： 时钟中断，键盘输入中断等。
+> 异常举例：除零错，page fault 等
+
  1. Linux的系统调用有哪些？大致的功能分类有哪些？  (w2l1)
+
+ > 具体可以查阅 syscall table http://docs.cs.up.ac.za/programming/asm/derick_tut/syscalls.html
+ 提供将近两百个系统调用，大致分类可以查看系统调用所在的文件，根据文件名推测大概类型，比如，与时间相关，输入输出设备相关的read_write，io_ctrl，与进程调度相关的sched等
 
 ```
   + 采分点：说明了Linux的大致数量（上百个），说明了Linux系统调用的主要分类（文件操作，进程管理，内存管理等）
