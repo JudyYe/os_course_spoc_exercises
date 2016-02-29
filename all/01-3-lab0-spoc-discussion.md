@@ -1,5 +1,17 @@
 # lab0 SPOC思考题
 
+##**提前准备**
+（请在上课前完成）
+
+ - 完成lec2的视频学习和提交对应的在线练习
+ - git pull ucore_os_lab, v9_cpu, os_course_spoc_exercises  　in github repos。这样可以在本机上完成课堂练习。
+ - 了解代码段，数据段，执行文件，执行文件格式，堆，栈，控制流，函数调用,函数参数传递，用户态（用户模式），内核态（内核模式）等基本概念。思考一下这些基本概念在linux, ucore, v9-cpu中的os*.c中是如何具体体现的。
+ - 安装好ucore实验环境，能够编译运行ucore labs中的源码。
+ - 会使用linux中的shell命令:objdump，nm，file, strace，gdb等，了解这些命令的用途。
+ - 会编译，运行，使用v9-cpu的dis,xc, xem命令（包括启动参数），阅读v9-cpu中的cpu.md文档，了解汇编指令的类型和含义等，了解v9-cpu的细节。如能debug dis, xc, xem更佳。
+ - 了解基于v9-cpu的执行文件的格式和内容，以及它是如何加载到v9-cpu的内存中的。
+ - 在piazza上就学习中不理解问题进行提问。
+
 ## 个人思考题
 
 ---
@@ -141,9 +153,9 @@ SETGATE(intr, 0,1,2,3);
 ```
 sudo apt-get install hexedit
 cd YOUR v9-cpu DIR
-git pull v9-cpu 
+git pull 
 cd YOUR os_course_spoc_exercise DIR
-git pull os_course_spoc_exercise
+git pull 
 ```
 
 分析和实验funcall.c，需要完成的内容包括： 
@@ -219,7 +231,7 @@ git pull os_course_spoc_exercise
 
 [HARD]分析和实验os1/os3.c，需要完成的内容包括： 
 -[X]
- 
+
  - os1中的task1和task2的堆栈的起始和终止地址是什么？
  > 注：堆栈的起始和终止地址指，运行时的栈，不是最大可以使用的栈。
 | \ | task0 | task1|
@@ -254,3 +266,9 @@ task0_sp -= 2; *task0_sp = &trapret;```
  >方法2：在task0中调用自己写的read函数，read是一个未定义中断号
  
  >方法3：参考陈文潇，```就是fc不是syscall也不是timer，可以看到alltraps里面是从PSHA开始的，那么在这之前PUSH一个奇怪的数作为fc，使得跳入unknown interrupt即可。```
+
+ - os1中的task1和task2的栈的起始和终止地址是什么？
+ - os1是如何实现任务切换的？
+ - os3中的task1和task2的栈的起始和终止地址是什么？
+ - os3是如何实现任务切换的？
+ - os3的用户态task能够破坏内核态的系统吗？
