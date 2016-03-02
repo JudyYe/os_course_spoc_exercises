@@ -19,6 +19,37 @@
 
 ## 3.1 BIOS
  1. 比较UEFI和BIOS的区别。
+ > UEFI和BIOS区别
+
+/|UEFI | BIOS 
+-|-|-|
+开机模式|保护模式 | 16位实模式
+开机时寻址空间 | | 16bit，$2^{16} = 64KB$
+语言 | C 语言 | 组合语言 
+扩充方式 | 载入驱动程序 | 结合中断向量
+可扩展性 | 好 | 较差
+输出 | 用EFI Byte Code（EFI字节代码）编写而成的，需要解释 | 由直接运行在CPU上的代码组成 
+
+> 流程对比
+
+步骤 | UEFI | BIOS|
+-|-|-
+1 | 系统开机 - 上电自检（Power On Self Test 或 POST）。|系统开机 - 上电自检（Power On Self Test 或 POST）。
+2 |UEFI 固件被加载，并由它初始化启动要用的硬件。 | POST过后初始化用于启动的硬件（磁盘、键盘控制器等）。
+3 | 固件读取其引导管理器以确定从何处（比如，从哪个硬盘及分区）加载哪个 UEFI 应用。| BIOS会运行BIOS磁盘启动顺序中第一个磁盘的首440bytes（MBR启动代码区域）内的代码。
+4| 固件按照引导管理器中的启动项目，加载UEFI 应用。| 启动引导代码从BIOS获得控制权，然后引导启动下一阶段的代码（如果有的话）（一般是系统的启动引导代码）。
+5|已启动的 UEFI 应用还可以启动其他应用（对应于 UEFI shell 或 rEFInd 之类的引导管理器的情况）或者启动内核及initramfs（对应于GRUB之类引导器的情况），这取决于 UEFI 应用的配置。| 再次被启动的代码（二阶段代码）（即启动引导）会查阅支持和配置文件。
+6 | / | 根据配置文件中的信息，启动引导程序会将内核和initramfs文件载入系统的RAM中，然后开始启动内核。
+
+> PXE ，网络启动，大致启动流程 
+1. POST
+2. 发送一个动态获得IP地址的广播包（请求FIND帧）到网络上。
+3. DHCP服务器在收到该广播包后，发送给客户端分配IP地址的DHCP回应包。内容包括客户端的IP地址，TFTP服务器的IP地址（DHCP服务器的066选项），预设通讯通道，及开机启动文件（DHCP服务器的067选项）。该文件应该是一种由PXE启动规范规定的固定格式的可执行文. XP正常启动时显示多重启动菜单之前的启动代码。 
+4. 客户面收到DHCP回应后，则会响应一个FRAME，以请求传送启动文件。之后，服务端将和客户机再进行一系列应答，以决定启动的一些参数。
+5. 客户端通过TFTP通讯协议从服务器下载开机启动文件。启动文件接收完成后，将控制权转交给启动块，完成PXE启动。客户端通过这个开机影像文件开机，这个开机文件可以只是单纯的开机程式也可以是操作系统。如果是用3Com Boot Image Editor编辑的启动文件，系统将根据PXE文件中的代码决定是显示选择菜单还是直接下载预设的镜像文件启动电脑。
+接下来的工作就由相应的镜像文件来完成了。
+> 参考资料：https://www.microsoft.com/resources/documentation/WindowsServ/2003/all/ADS/en-us/nbs_boot_policy_overview.mspx?mfr=true
+
  1. 描述PXE的大致启动流程。
 
 ## 3.2 系统启动流程
@@ -66,6 +97,25 @@
  1. Linux的系统调用有哪些？大致的功能分类有哪些？  (w2l1)
 
  ```
+ 1. 举例说明Linux中有哪些中断，哪些异常？
+> Linux中把中断描述符分为五类：
+
+| 门|功能 |
+|-|-|
+|中断门（interrupt gate）| 用户态的进程不能访问Intel中断门（门的DPL字段为0）。所有的Linux中断处理程序都通过中断门激活，并全部限制在内核态。
+|系统门（system gate）|用户态的进程可以访问Intel陷阱门（门的DPL字段为3）。通过系统门来激活三个Linux异常处理程序|
+|系统中断门（system interrupt gate）| 能够被用户态进程访问的Intel中断门（门的DPL字段为3）。与向量3相关的异常处理程序是由系统中断门激活的
+|陷阱门（trap gate）| 用户态的进程不能访问的一个Intel陷阱门（门的DPL字段为0）。大部分Linux异常处理程序都通过陷阱门来激活。
+|任务门（task gate）| 不能被用户态进程访问的Intel任务门（门的DPL字段为0）。Linux对“Double fault”异常的处理程序是由任务门激活的。|
+ > 查看全部中断，可以查看linux 的中断向量表。中断举例： 时钟中断，键盘输入中断等。
+> 异常举例：除零错，page fault 等
+
+ 1. Linux的系统调用有哪些？大致的功能分类有哪些？  (w2l1)
+
+ > 具体可以查阅 syscall table http://docs.cs.up.ac.za/programming/asm/derick_tut/syscalls.html
+ 提供将近两百个系统调用，大致分类可以查看系统调用所在的文件，根据文件名推测大概类型，比如，与时间相关，输入输出设备相关的read_write，io_ctrl，与进程调度相关的sched等
+
+```
   + 采分点：说明了Linux的大致数量（上百个），说明了Linux系统调用的主要分类（文件操作，进程管理，内存管理等）
   - 答案没有涉及上述两个要点；（0分）
   - 答案对上述两个要点中的某一个要点进行了正确阐述（1分）
@@ -107,7 +157,7 @@
  
  ```
   strace : 用于用来跟踪进程执行时的系统调用和所接收的信号。-f参数显示了跟踪由fork调用所产生的子进程。-c参数可以统计每一系统调用的所执行的时间,次数和出错的次数等。
-  ex1.md的提示不是很懂
+  通过strace的追踪，可以看到在linux应用调用中，ex1依次调用了execve新建进程, access检查文件, open打开文件, fstat查看文件, read读取文件, mmap将文件载入内存, mprotect设置内存访问权限, 最后调用write函数输出hello world。
  ```
 
  ```
@@ -122,6 +172,66 @@
  1. ucore的系统调用中参数传递代码分析。
  1. 以getpid为例，分析ucore的系统调用中返回结果的传递代码。
  1. 以ucore lab8的answer为例，分析ucore 应用的系统调用编写和含义。
+ > - 在ucore中的trap.c中，通过trapframe的结构传递参数。调用trap（trapframe），trap中调用trap_dispatch(trapframe),在trap_dispatch()中检查中断类型trapframe tf->trapno,如果是系统调用T_SYS，则调用syscall().
+> - 进入syscall()中，在trapframe中有tf_reg，tf_reg的eax传递系统调用号，参数有ebx, ecx, edi,esi传递。
+
+ 1. ucore的系统调用中返回结果的传递代码分析。
+> 恢复syscall存储在trapframe中的调用trap之前的CPU状态，清除trap number，error code，iret，从中断中返回。
+找到 /kern/trap/trapentry.S中的.globl __trapret
+
+    ```
+__trapret:
+    # restore registers from stack
+    popal
+
+    # restore %ds, %es, %fs and %gs
+    popl %gs
+    popl %fs
+    popl %es
+    popl %ds
+
+    # get rid of the trap number and error code
+    addl $0x8, %esp
+    iret
+    ```
+ 1. 以ucore lab8的answer为例，分析ucore应用的系统调用编写和含义。
+  > 程序员通过user/libs/syscall.c中的函数调用系统调用。如
+    
+    ```
+int
+sys_wait(int pid, int *store) {
+    return syscall(SYS_wait, pid, store);
+}
+    ```
+> syscall()函数中，通过压栈，和内联函数调用传入参数.内联函数可以在kernel/syscall.c中找到对应的使用，见1
+
+    ```
+    syscall(int num, ...) {
+    va_list ap;
+    va_start(ap, num);
+    uint32_t a[MAX_ARGS];
+    int i, ret;
+    for (i = 0; i < MAX_ARGS; i ++) {
+        a[i] = va_arg(ap, uint32_t);
+    }
+    va_end(ap);
+
+    asm volatile (
+        "int %1;"
+        : "=a" (ret)
+        : "i" (T_SYSCALL),
+          "a" (num),
+          "d" (a[0]),
+          "c" (a[1]),
+          "b" (a[2]),
+          "D" (a[3]),
+          "S" (a[4])
+        : "cc", "memory");
+    return ret;
+}
+    ```
+
+
  1. 以ucore lab8的answer为例，尝试修改并运行ucore OS kernel代码，使其具有类似Linux应用工具`strace`的功能，即能够显示出应用程序发出的系统调用，从而可以分析ucore应用的系统调用执行过程。
  
 ## 3.6 请分析函数调用和系统调用的区别
