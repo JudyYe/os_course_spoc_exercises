@@ -88,7 +88,13 @@ Virtual Address 7268:
 
 （4）假设你有一台支持[反置页表](http://en.wikipedia.org/wiki/Page_table#Inverted_page_table)的机器，请问你如何设计操作系统支持这种类型计算机？请给出设计方案。
 
+
  (5)[X86的页面结构](http://os.cs.tsinghua.edu.cn/oscourse/OS2015/lecture06#head-1f58ea81c046bd27b196ea2c366d0a2063b304ab)
+ 
+（6） recursive mapping 理解
+> recursive mapping就是把一级页表的基址地址作为其中一个二级页表的基址，这样有可能一级页表查询找到二级页表的物理地址是它本身，即为recursive的含义。
+同时，在identifying mapping中，如果更改Top level Page Table Pointer的值为0x10，也变成了Recursive mapping
+ 
 --- 
 
 ## 扩展思考题
